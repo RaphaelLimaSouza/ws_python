@@ -9,7 +9,8 @@ def adicionar_tarefa(texto):
 
 
 def listar_tarefas():
-    return [f"{'[x]' if nome_da_tarefa['concluida'] else '[ ]'} {nome_da_tarefa['texto']}" for nome_da_tarefa in lista_de_tarefas]
+    return [f"{'[x]' if nome_da_tarefa['concluida'] else '[ ]'} {nome_da_tarefa['texto']}"
+            for nome_da_tarefa in lista_de_tarefas]
 
 
 def remover_tarefa(nome_da_tarefa):

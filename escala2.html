@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escala</title>
+</head>
+<body>
+    <textarea id="nomes" placeholder="Insira os nomes aqui, separados por vírgulas"></textarea><br>
+    <button onclick="gerarEscala()">Gerar Escala</button>
+    <div id="escala"></div>
+    <button onclick="downloadCSV()">Download CSV</button>
+
+    <script>
+        var escala = [];
+        var dataAtual = new Date();
+        var contador = {};
+
+        function proximoDomingo(data) {
+            data.setDate(data.getDate() + (7 - data.getDay() || 7));
+            return data;
+        }
+
+        function embaralhar(array) {
+            var currentIndex = array.length, temporaryValue, randomIndex;
+
+            while (0 !== currentIndex) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex -= 1;
+
+                temporaryValue = array[currentIndex];
+                array[currentIndex] = array[randomIndex];
+                array[randomIndex] = temporaryValue;
+            }
+
+            return array;
+        }
+
+        function adicionarEscala(data, turno, responsavelCamera, responsavelComputador) {
+            escala.push({
+                data: data.toISOString().split('T')[0],
+                turno: turno,
+                responsavelCamera: responsavelCamera,
+                responsavelComputador: responsavelComputador
+            });
+        }
+
+        function downloadCSV() {
+            var csv = 'Data,Turno,Responsável pela Câmera,Responsável pelo Computador\n';
+            escala.forEach(function(row) {
+                csv += row.data + ',' + row.turno + ',' + row.responsavelCamera + ',' + row.responsavelComputador + '\n';
+            });
+
+            var hiddenElement = document.createElement('a');
+            hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
+            hiddenElement.target = '_blank';
+            hiddenElement.download = 'escala.csv';
+            hiddenElement.click();
+        }
+
+        function gerarEscala() {
+            var nomes = document.getElementById('nomes').value.split(',');
+            escala = [];
+            contador = {};
+            dataAtual = new Date();
+
+            nomes = embaralhar(nomes);
+
+            for (var i = 0; i < 5; i++) {
+                dataAtual = proximoDomingo(dataAtual);
+
+                for (var j = 0; j < nomes.length; j++) {
+                    if (!contador[nomes[j]]) contador[nomes[j]] = 0;
+
+                    if (contador[nomes[j]] < 2) {
+                        adicionarEscala(new Date(dataAtual), 'Manhã', nomes[j], nomes[(j+1)%nomes.length]);
+                        contador[nomes[j]]++;
+                        j++;
+                    }
+                }
+            }
+
+            var divEscala = document.getElementById('escala');
+            divEscala.innerHTML = '';
+            escala.forEach(function(row) {
+                divEscala.innerHTML += row.data + ' ' + row.turno + ': ' + row.responsavelCamera + ', ' + row.responsavelComputador + '<br>';
+            });
+        }
+    </script>
+</body>
+</html>

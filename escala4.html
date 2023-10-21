@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Programa de Escala</h2>
+
+<button onclick="addNames()">Adicionar Nomes</button>
+<button onclick="generateSchedule()">Gerar Escala</button>
+<button onclick="downloadCSV()">Baixar CSV</button>
+
+<h3>Nomes:</h3>
+<ul id="names"></ul>
+
+<h3>Escala:</h3>
+<table id="schedule" border="1">
+<tr>
+    <th>Data</th>
+    <th>Turno</th>
+    <th>Computador</th>
+    <th>Câmera</th>
+</tr>
+</table>
+
+<script>
+var names = [];
+var roles = ['Câmera', 'Computador'];
+var shifts = ['Manhã', 'Noite'];
+var schedule = [];
+
+function addNames() {
+    var nameList = prompt("Por favor, insira uma lista de nomes separados por vírgulas:");
+    if (nameList != null) {
+        var newNames = nameList.split(',');
+        for (var i = 0; i < newNames.length; i++) {
+            var name = newNames[i].trim();
+            names.push(name);
+            var li = document.createElement("li");
+            li.appendChild(document.createTextNode(name));
+            document.getElementById("names").appendChild(li);
+        }
+    }
+}
+
+function getNextSunday(date) {
+    var nextSunday = new Date(date.getTime());
+    nextSunday.setDate(nextSunday.getDate() + (7 - nextSunday.getDay() || 7));
+    return nextSunday;
+}
+
+function generateSchedule() {
+    var table = document.getElementById("schedule");
+    table.innerHTML = "<tr><th>Data</th><th>Turno</th><th>Computador</th><th>Câmera</th></tr>";
+    var date = new Date();
+    for (var i = 0; i < 10; i+=2) {
+        if (i % 4 === 0) {
+            date = getNextSunday(date);
+        }
+        var s = {
+            'Data': date.toISOString().split('T')[0],
+            'Turno': shifts[(i % 4) < 2 ? 0 : 1],
+            'Computador': names[i % names.length],
+            'Câmera': names[(i+1) % names.length]
+        };
+        schedule.push(s);
+        var row = table.insertRow(-1);
+        row.style.backgroundColor = (i % 4) < 2 ? '#D3D3D3' : '#FFFFFF';
+        row.insertCell(0).innerHTML = s['Data'];
+        row.insertCell(1).innerHTML = s['Turno'];
+        row.insertCell(2).innerHTML = s['Computador'];
+        row.insertCell(3).innerHTML = s['Câmera'];
+    }
+}
+
+function downloadCSV() {
+    var csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += "Data,Turno,Computador,Câmera\n";
+    schedule.forEach(function(s) {
+        csvContent += s['Data'] + "," + s['Turno'] + "," + s['Computador'] + "," + s['Câmera'] + "\n";
+    });
+    var encodedUri = encodeURI(csvContent);
+    var link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "escala.csv");
+    document.body.appendChild(link);
+    link.click();
+}
+</script>
+
+</body>
+</html>
